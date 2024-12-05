@@ -7,26 +7,32 @@ int nbLignes, nbColonnes;
 bool partieTerminee;
 string raisonDeLaFin;
 
-// Position de chacun des personnages stockée dans des tableaux [x,y]
+// Position de chacun des personnages stockée dans des tableaux [numLigne,numColonne]
 int[] owenPos, indominusPos, bluePos, maisiePos;
+
+//Le nombre de grenade que Owen peut lancer
+int nbGrenades;
 
 // Plateau qui est un tableau de caractères à 2D
 char[,] plateau;
 
-//Caractères permettant d'identifier chaque personnage sur le plateau
+//Caractères permettant d'identifier le contnu de chaque case le plateau
 const char VIDE = ' ';
 const char OWEN = 'O';
 const char BLUE = 'B';
 const char MAISIE = 'M';
 const char INDOMINUS = 'I';
+const char TROU = 'X';
 
-Random rng = new();
+//Utilisé pour la génération aléatoire
+Random generateur = new();
 
 //------------------FIN DECLARATION--------------------------
 
-
-
 RenseignerDimensionsPlateau();
+
+//Affecter le ombre de grenades à la plus grande dimension
+nbGrenades = Math.Max(nbLignes, nbColonnes);
 
 // Création du plateau
 plateau = new char[nbLignes, nbColonnes];
@@ -125,6 +131,70 @@ void RenseignerDimensionsPlateau()
 
 }
 
+int [] RenseignerCible()
+{
+    Console.WriteLine("Choix de la cible par Owen avec portée de 3 cases :");
+    int[] cible = [];
+
+    // Saisie et validation du numéro de ligne de la cible
+    do
+    {
+        Console.WriteLine("Entrez le numéro de ligne de la cible (doit être un nombre positif) :");
+        var input = Console.ReadLine();
+
+
+        // Valider que l'entrée est un nombre, qu'elle est positif,
+        // et qu'elle est à la portée de Owen
+        if (! int.TryParse(input, out cible[0]))
+        {
+            Console.WriteLine("Veuillez entrer un nombre !");
+        }
+        else if( cible[0] < 0 && cible[0] >= nbLignes )
+        {
+            Console.WriteLine($"Veuillez entrer un nombre positif et inférieur à {nbLignes - 1 }.");
+        }
+        else if(Math.Abs(cible[0] - owenPos[0]) > 3)
+        {
+            Console.WriteLine("Cible hors de portée!");
+        }
+        else
+        {
+            break;
+        }
+    } while (true);
+
+
+
+    // Saisie et validation du numéro de colonne de la cible
+    do
+    {
+        Console.WriteLine("Entrez le numéro de colonne de la cible (doit être un nombre positif) :");
+        var input = Console.ReadLine();
+
+
+        // Valider que l'entrée est un nombre, qu'elle est positif,
+        // et qu'elle est à la portée de Owen
+        if (!int.TryParse(input, out cible[1]))
+        {
+            Console.WriteLine("Veuillez entrer un nombre !");
+        }
+        else if (cible[1] > 0 && cible[0] >= nbColonnes)
+        {
+            Console.WriteLine($"Veuillez entrer un nombre positif et inférieur à {nbColonnes - 1}.");
+        }
+        else if (Math.Abs(cible[1] - owenPos[1]) > 3)
+        {
+            Console.WriteLine("Cible hors de portée!");
+        }
+        else
+        {
+            break;
+        }
+    } while (true);
+
+    return cible;
+}
+
 // Fonction pour placer les personnages dans le plateau
 void PlacerPersonnages()
 {
@@ -220,54 +290,50 @@ void DeplacerManuellement(char personnage, int[] position)
 
 }
 
-void deplacerBlue(int[] blue, int[] indominus)
+void LancerGrenade() {
+
+    int [] cible1 = RenseignerCible();
+    int[] cible2 = cible1;
+    int direction;
+
+    do
+    {
+        // Choisir une direction aléatoire : 0 = haut, 1 = bas, 2 = gauche, 3 = droite
+        direction = generateur.Next(0, 4);
+
+         switch (direction)
+        {
+            case 0: // Haut
+                cible2[0] --;
+                break;
+            case 1: // Bas
+                cible2[0]++;
+                break;
+            case 2: // Gauche
+                cible2[1]--;
+                break;
+            case 3: // Droite
+                cible2[1]++;
+                break;
+        }
+
+        if(EstDeplacementValide(cible2))
+        {
+            break;
+        }
+
+    } while (true);
+
+    //Verifier si il ne touche pas un des personnages
+    // Si oui fin partie.
+    //Sinon Placer trous et decrementer grenades
+
+}
+
+bool EstDeplacementValide(int[] position)
 {
-    if (indominus[0] > blue[0] + 1)
-    {
-        blue[0] += 2;
-    }
-
-
-    else if (indominus[0] < blue[0] - 1)
-    {
-        blue[0] -= 2;
-    }
-
-
-    else if (indominus[1] > blue[1] + 1)
-    {
-        blue[1] += 2;
-    }
-
-
-    else if (indominus[1] < blue[1] - 1)
-    {
-        blue[1] -= 2;
-    }
-
-
-    else if (indominus[0] > blue[0])
-    {
-        blue[0] += 1;
-    }
-
-
-    else if (indominus[0] < blue[0])
-    {
-        blue[0] -= 1;
-    }
-
-
-    else if (indominus[1] > blue[1])
-    {
-        blue[1] += 1;
-    }
-
-
-    else if (indominus[1] < blue[1])
-    {
-        blue[1] -= 1;
-    }
+    return position[0] >= 0 && position[0] < nbLignes &&
+           position[1] >= 0 && position[1] < nbColonnes;
 }
 
 void DeplacerAleatoirement(char personnage, int[] position)
@@ -278,7 +344,7 @@ void DeplacerAleatoirement(char personnage, int[] position)
     while (!deplacementValide)
     {
         // Choisir une direction aléatoire : 0 = haut, 1 = bas, 2 = gauche, 3 = droite
-        direction = rng.Next(0, 4);
+        direction = generateur.Next(0, 4);
 
         // Variables pour déterminer les nouvelles positions
         nouveauX = position[0];
@@ -301,7 +367,7 @@ void DeplacerAleatoirement(char personnage, int[] position)
         }
 
         // Vérifier si le déplacement est valide (dans les limites du plateau)
-        if (nouveauX >= 0 && nouveauX < nbLignes && nouveauY >= 0 && nouveauY < nbColonnes)
+        if (EstDeplacementValide([nouveauX, nouveauY]))
         {
             if (plateau[nouveauX, nouveauY] == VIDE)
             {
