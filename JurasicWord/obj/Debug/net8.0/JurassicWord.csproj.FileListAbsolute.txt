@@ -1,0 +1,15 @@
+/Users/sada/Projets/JurassicWorld/JurasicWord/bin/Debug/net8.0/JurassicWord
+/Users/sada/Projets/JurassicWorld/JurasicWord/bin/Debug/net8.0/JurassicWord.deps.json
+/Users/sada/Projets/JurassicWorld/JurasicWord/bin/Debug/net8.0/JurassicWord.runtimeconfig.json
+/Users/sada/Projets/JurassicWorld/JurasicWord/bin/Debug/net8.0/JurassicWord.dll
+/Users/sada/Projets/JurassicWorld/JurasicWord/bin/Debug/net8.0/JurassicWord.pdb
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.AssemblyInfoInputs.cache
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.AssemblyInfo.cs
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.csproj.CoreCompileInputs.cache
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.sourcelink.json
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.dll
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/refint/JurassicWord.dll
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.pdb
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/JurassicWord.genruntimeconfig.cache
+/Users/sada/Projets/JurassicWorld/JurasicWord/obj/Debug/net8.0/ref/JurassicWord.dll

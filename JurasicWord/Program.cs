@@ -11,7 +11,7 @@ string raisonDeLaFin;
 int[] owenPos, indominusPos, bluePos, maisiePos;
 
 //Le nombre de grenade que Owen peut lancer
-int nbGrenades;
+int grenades;
 
 bool aToucheIndominus;
 
@@ -31,68 +31,11 @@ Random generateur = new();
 
 //------------------FIN DECLARATION--------------------------
 
-RenseignerDimensionsPlateau();
-
-//Affecter le ombre de grenades à la plus grande dimension
-nbGrenades = Math.Max(nbLignes, nbColonnes);
-
-// Création du plateau
-plateau = new char[nbLignes, nbColonnes];
-
-//Initialiser notre plateau avec des cases vides
-for (int i = 0; i < nbLignes; i++)
-{
-    for (int j = 0; j < nbColonnes; j++)
-    {
-        plateau[i, j] = vide;
-    }
-}
-
-
-// Affectation des positions de départ des utilisateurs
-owenPos = [0, 0];
-bluePos = [0, 1];
-maisiePos = [nbLignes - 1, nbColonnes - 1];
-indominusPos = [nbLignes / 2, nbColonnes / 2];
-
-aToucheIndominus = false;
-partieTerminee = false;
-raisonDeLaFin = "";
-
-while (true) // Ajouter une boucle pour continuer à jouer
-{
-    PlacerPersonnages();
-    AfficherPlateau();
-
-    //Tour de Owen
-    DeplacerManuellement(owen, owenPos);
-    AfficherPlateau();
-    
-    LancerGrenade();
-    AfficherPlateau();
-
-    //Tour de Blue
-    DeplacerManuellement(blue, bluePos);
-    AfficherPlateau();
-
-    //Tour de Indominus Rex
-    DeplacerAleatoirement(indominus, indominusPos);
-    AfficherPlateau();
-    
-    //Tour de Maisie
-    DeplacerAleatoirement(maisie, maisiePos);
-    AfficherPlateau();
-
-    if (partieTerminee)
-    {
-        Console.WriteLine($"{raisonDeLaFin}");
-        break;
-    }
-}
 
 //------------------Fonctions---------------------------------------
 
 // Fonction permettant d'avoir le nombre de lignes et de colonnes de notre plateau
+// Et d'initialiser les variables qui en dependent
 void RenseignerDimensionsPlateau()
 {
     // Saisie et validation du nombre de lignes
@@ -131,23 +74,33 @@ void RenseignerDimensionsPlateau()
             Console.WriteLine("Veuillez entrer un nombre valide et positif.");
         }
     } while (true);
+
+    //Affecter le ombre de grenades à la plus grande dimension
+    grenades = Math.Max(nbLignes, nbColonnes);
+
+// Création du plateau
+    plateau = new char[nbLignes, nbColonnes];
+
+    // Affectation de valeurs de depart à M et IR
+    maisiePos = [nbLignes - 1, nbColonnes - 1];
+    indominusPos = [nbLignes / 2, nbColonnes / 2];
 }
 
 int[] RenseignerCible()
 {
     Console.WriteLine("Choix de la cible par Owen avec portée de 3 cases :");
-    
+
     int x, y;
     bool estValide = false;
 
     // Saisie et validation du numéro de ligne de la cible
     do
     {
-        Console.WriteLine("Entrez le numéro de ligne de la cible (doit être un nombre positif) :");
+        Console.WriteLine("Donner l'abscisse de l'emplacement du jet de grenade (doit être un nombre positif) :");
         var input = Console.ReadLine();
-        
+
         estValide = int.TryParse(input, out x);
-        
+
         // Valider que l'entrée est un nombre, qu'elle est positif,
         // et qu'elle est à la portée de Owen
         if (!estValide)
@@ -168,12 +121,11 @@ int[] RenseignerCible()
         }
     } while (true);
 
-    
 
     // Saisie et validation du numéro de colonne de la cible
     do
     {
-        Console.WriteLine("Entrez le numéro de colonne de la cible (doit être un nombre positif) :");
+        Console.WriteLine("Donner l'ordonnée de l'emplacement du jet de grenade (doit être un nombre positif) :");
         var input = Console.ReadLine();
 
 
@@ -197,6 +149,7 @@ int[] RenseignerCible()
             break;
         }
     } while (true);
+
     return [x, y];
 }
 
@@ -208,6 +161,18 @@ void PlacerPersonnages()
     plateau[maisiePos[0], maisiePos[1]] = maisie;
     plateau[indominusPos[0], indominusPos[1]] = indominus;
 }
+
+void InitialiserPlateau()
+{
+    for (int i = 0; i < nbLignes; i++)
+    {
+        for (int j = 0; j < nbColonnes; j++)
+        {
+            plateau[i, j] = vide;
+        }
+    }
+}
+
 
 void AfficherPlateau()
 {
@@ -226,10 +191,9 @@ void AfficherPlateau()
     }
 }
 
-void DeplacerManuellement(char personnage, int[] position)
+void DeplacerOwen()
 {
-    string nomPersonnage = personnage == owen ? "Owen" : "Blue";
-    Console.WriteLine($"Utiliser les fleches pour déplacer {nomPersonnage}...");
+    Console.WriteLine("Utilisez les flèches pour diriger Owen.");
 
     bool deplacementValide = false;
     int nouveauX, nouveauY;
@@ -238,8 +202,8 @@ void DeplacerManuellement(char personnage, int[] position)
     while (!deplacementValide)
     {
         // Variables pour déterminer les nouvelles positions
-        nouveauX = position[0];
-        nouveauY = position[1];
+        nouveauX = owenPos[0];
+        nouveauY = owenPos[1];
         do
         {
             direction = Console.ReadKey().Key;
@@ -263,10 +227,10 @@ void DeplacerManuellement(char personnage, int[] position)
                     break;
 
                 default:
-                    Console.WriteLine("Veuillez utiliser les fleches pour deplacer le personnage...");
+                    Console.WriteLine("Veuillez utiliser les fleches pour deplacer le Owen...");
                     break;
             }
-        } while (nouveauX == position[0] && nouveauY == position[1]);
+        } while (nouveauX == owenPos[0] && nouveauY == owenPos[1]);
 
 
         // Vérifier si le déplacement est valide (dans les limites du plateau)
@@ -275,13 +239,75 @@ void DeplacerManuellement(char personnage, int[] position)
             if (plateau[nouveauX, nouveauY] == vide)
             {
                 // Effectuer le déplacement
-                plateau[position[0], position[1]] = vide;
-                position[0] = nouveauX;
-                position[1] = nouveauY;
-                plateau[position[0], position[1]] = personnage;
+                plateau[owenPos[0], owenPos[1]] = vide;
+                owenPos[0] = nouveauX;
+                owenPos[1] = nouveauY;
+                plateau[owenPos[0], owenPos[1]] = owen;
                 deplacementValide = true;
             }
-            else if (personnage == blue && plateau[nouveauX, nouveauY] == indominus)
+            else
+            {
+                Console.WriteLine("Déplacement invalide !\n Veuillez choisir une autre direction...");
+            }
+        }
+    }
+}
+
+void DeplacerBlue()
+{
+    Console.WriteLine("Utilisez les flèches pour diriger Blue.");
+
+    bool deplacementValide = false;
+    int nouveauX, nouveauY;
+    ConsoleKey direction;
+
+    while (!deplacementValide)
+    {
+        // Variables pour déterminer les nouvelles positions
+        nouveauX = bluePos[0];
+        nouveauY = bluePos[1];
+        do
+        {
+            direction = Console.ReadKey().Key;
+
+            switch (direction)
+            {
+                case ConsoleKey.RightArrow:
+                    nouveauY++;
+                    break;
+
+                case ConsoleKey.LeftArrow:
+                    nouveauY--;
+                    break;
+
+                case ConsoleKey.UpArrow:
+                    nouveauX--;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    nouveauX++;
+                    break;
+
+                default:
+                    Console.WriteLine("Veuillez utiliser les fleches pour deplacer le Blue...");
+                    break;
+            }
+        } while (nouveauX == bluePos[0] && nouveauY == bluePos[1]);
+
+
+        // Vérifier si le déplacement est valide (dans les limites du plateau)
+        if (nouveauX >= 0 && nouveauX < nbLignes && nouveauY >= 0 && nouveauY < nbColonnes)
+        {
+            if (plateau[nouveauX, nouveauY] == vide)
+            {
+                // Effectuer le déplacement
+                plateau[bluePos[0], bluePos[1]] = vide;
+                bluePos[0] = nouveauX;
+                bluePos[1] = nouveauY;
+                plateau[bluePos[0], bluePos[1]] = blue;
+                deplacementValide = true;
+            }
+            else if (plateau[nouveauX, nouveauY] == indominus)
             {
                 //Logique permettant de repousser I de 3 cases ou jusqu'au bord d'un fossé proche
             }
@@ -293,14 +319,15 @@ void DeplacerManuellement(char personnage, int[] position)
     }
 }
 
-void LancerGrenade()
+void JetGrenades()
 {
+    Console.WriteLine($"Nombre de grenades restant: {grenades}");
     Console.WriteLine("Owen veut il lancer une grenade? \nRépondre par N pour Non et autre chose pour Oui...");
     var choix = Console.ReadLine();
     if (choix == "N")
         return;
     int[] cible1 = RenseignerCible();
-    int[] cible2 = [0,0];
+    int[] cible2 = [0, 0];
 
     // Choisir la direction en comparant la position de la cible avec celle d'Owen
     if (cible1[0] < owenPos[0]) // Vers le haut
@@ -334,7 +361,7 @@ void LancerGrenade()
         plateau[cible1[0], cible1[1]] = trou;
         return;
     }
-    
+
     if (plateau[cible1[0], cible1[1]] == indominus)
     {
         aToucheIndominus = true;
@@ -347,9 +374,8 @@ void LancerGrenade()
     // Vérifier si la cible2 touche un personnage
     if (EstDeplacementValide(cible2))
     {
-        
-        if(plateau[cible2[0], cible2[1]] == maisie || plateau[cible2[0], cible2[1]] == owen ||
-           plateau[cible2[0], cible2[1]] == blue)
+        if (plateau[cible2[0], cible2[1]] == maisie || plateau[cible2[0], cible2[1]] == owen ||
+            plateau[cible2[0], cible2[1]] == blue)
         {
             partieTerminee = true;
             raisonDeLaFin = "===== DEFAITE ===== \nUne grenade a touché un personnage par erreur.";
@@ -368,17 +394,16 @@ void LancerGrenade()
     }
 
 
-
     aToucheIndominus = plateau[cible1[0], cible1[1]] == indominus || aToucheIndominus;
 
-    nbGrenades--;
+    grenades--;
     if (VerifierIndominus())
     {
         partieTerminee = true;
         raisonDeLaFin = "===== VICtoiRE ===== \nOwen a piégé Indominus";
     }
-    
-    if (nbGrenades <= 0)
+
+    if (grenades <= 0)
     {
         Console.WriteLine("Plus de grenades disponibles !");
         partieTerminee = true;
@@ -393,42 +418,123 @@ bool EstDeplacementValide(int[] position)
            plateau[position[0], position[1]] != trou;
 }
 
-void DeplacerAleatoirement(char personnage, int[] position)
+(int, int) DeplacerAleatoirement(int direction, int[] position)
+{
+    int nouveauX = position[0];
+    int nouveauY = position[1];
+
+    switch (direction)
+    {
+        case 0: // Haut
+            nouveauX--;
+            break;
+        case 1: // Bas
+            nouveauX++;
+            break;
+        case 2: // Gauche
+            nouveauY--;
+            break;
+        case 3: // Droite
+            nouveauY++;
+            break;
+    }
+
+    return (nouveauX, nouveauY);
+}
+
+bool EffectuerDeplacement(int nouveauX, int nouveauY, bool deplacementValide)
+{
+    // Effectuer le déplacement si la case est libre
+    if (plateau[nouveauX, nouveauY] == vide)
+    {
+        plateau[indominusPos[0], indominusPos[1]] = vide;
+        indominusPos[0] = nouveauX;
+        indominusPos[1] = nouveauY;
+        plateau[indominusPos[0], indominusPos[1]] = indominus;
+        deplacementValide = true;
+    }
+    //  Vérifier si I ne prend pas la place de O ou B
+    else if (plateau[nouveauX, nouveauY] == owen)
+    {
+        partieTerminee = true;
+        raisonDeLaFin = "===== DEFAITE ===== \nIndominus Rex a éliminé Owen.";
+
+        // Effectuer le déplacement
+        plateau[indominusPos[0], indominusPos[1]] = vide;
+        indominusPos[0] = nouveauX;
+        indominusPos[1] = nouveauY;
+        plateau[indominusPos[0], indominusPos[1]] = indominus;
+        deplacementValide = true;
+    }
+
+    else if (plateau[nouveauX, nouveauY] == maisie)
+    {
+        partieTerminee = true;
+        raisonDeLaFin = "===== DEFAITE ===== \nIndominus Rex a éliminé Maisie.";
+
+        // Effectuer le déplacement
+        plateau[indominusPos[0], indominusPos[1]] = vide;
+        indominusPos[0] = nouveauX;
+        indominusPos[1] = nouveauY;
+        plateau[indominusPos[0], indominusPos[1]] = indominus;
+        deplacementValide = true;
+    }
+
+    return deplacementValide;
+}
+
+void DeplacerIndominus()
 {
     bool deplacementValide = false;
     int nouveauX, nouveauY, direction;
-    int nbCases = 1;
-    
-    //Fonctionnalité Indominus énérvé
-    if (aToucheIndominus && personnage == indominus)
+
+    do
     {
-        nbCases = 2;
+        // Choisir une direction aléatoire : 0 = haut, 1 = bas, 2 = gauche, 3 = droite
+        direction = generateur.Next(0, 4);
+
+
+        (nouveauX, nouveauY) = DeplacerAleatoirement(direction, indominusPos);
+
+        // Refais le choix si le déplacement est invalide
+        if (!EstDeplacementValide([nouveauX, nouveauY])) continue;
+
+        deplacementValide = EffectuerDeplacement(nouveauX, nouveauY, deplacementValide);
+    } while (!deplacementValide);
+
+    if (!partieTerminee && aToucheIndominus)
+    {
+        deplacementValide = false;
+        int direction2;
+        do
+        {
+            // Choisir une direction aléatoire qui est differente de celle choisie précèdemment
+            do
+            {
+                direction2 = generateur.Next(0, 4);
+            } while (direction2 != direction);
+
+            (nouveauX, nouveauY) = DeplacerAleatoirement(direction2, indominusPos);
+
+            // Refais le choix si le déplacement est invalide
+            if (!EstDeplacementValide([nouveauX, nouveauY])) continue;
+
+            deplacementValide = EffectuerDeplacement(nouveauX, nouveauY, deplacementValide);
+        } while (!deplacementValide);
     }
+}
+
+void DeplacerMaisie()
+{
+    bool deplacementValide = false;
+    int nouveauX, nouveauY, direction;
 
     while (!deplacementValide)
     {
         // Choisir une direction aléatoire : 0 = haut, 1 = bas, 2 = gauche, 3 = droite
         direction = generateur.Next(0, 4);
 
-        // Variables pour déterminer les nouvelles positions
-        nouveauX = position[0];
-        nouveauY = position[1];
-        
-        switch (direction)
-        {
-            case 0: // Haut
-                nouveauX -= nbCases;
-                break;
-            case 1: // Bas
-                nouveauX += nbCases;
-                break;
-            case 2: // Gauche
-                nouveauY -= nbCases;
-                break;
-            case 3: // Droite
-                nouveauY += nbCases;
-                break;
-        }
+        (nouveauX, nouveauY) = DeplacerAleatoirement(direction, maisiePos);
 
         // Refais le choix si le déplacement est invalide
         if (!EstDeplacementValide([nouveauX, nouveauY])) continue;
@@ -436,71 +542,71 @@ void DeplacerAleatoirement(char personnage, int[] position)
         // Effectuer le déplacement si la case est libre
         if (plateau[nouveauX, nouveauY] == vide)
         {
-            plateau[position[0], position[1]] = vide;
-            position[0] = nouveauX;
-            position[1] = nouveauY;
-            plateau[position[0], position[1]] = personnage;
+            plateau[maisiePos[0], maisiePos[1]] = vide;
+            maisiePos[0] = nouveauX;
+            maisiePos[1] = nouveauY;
+            plateau[maisiePos[0], maisiePos[1]] = maisie;
             deplacementValide = true;
         }
-        //  Vérifier si I ne prend pas la place de O ou B
-        else if (personnage == indominus)
-        {
-            if (plateau[nouveauX, nouveauY] == owen)
-            {
-                partieTerminee = true;
-                raisonDeLaFin = "===== DEFAITE ===== \nIndominus Rex a éliminé Owen.";
-
-                // Effectuer le déplacement
-                plateau[position[0], position[1]] = vide;
-                position[0] = nouveauX;
-                position[1] = nouveauY;
-                plateau[position[0], position[1]] = personnage;
-                break;
-            }
-
-            if (plateau[position[0], position[1]] == maisie)
-            {
-                partieTerminee = true;
-                raisonDeLaFin = "===== DEFAITE ===== \nIndominus Rex a éliminé Maisie.";
-
-                // Effectuer le déplacement
-                plateau[position[0], position[1]] = vide;
-                position[0] = nouveauX;
-                position[1] = nouveauY;
-                plateau[position[0], position[1]] = personnage;
-                break;
-            }
-        }
-        else if (personnage == blue && plateau[nouveauX, nouveauY] == indominus)
+        else if (plateau[nouveauX, nouveauY] == indominus)
         {
             // Repousser Indominus Rex de 3 cases  ou sur le trou le plus proche
-            int finalX = nouveauX ;
-            int finalY = nouveauY ;
+            int finalX = nouveauX;
+            int finalY = nouveauY;
 
-            if (finalX == position[0])
+            //Verifier s'ils sont sur la même ligne
+            if (finalX == maisiePos[0])
             {
-                for (int i = 3; i >0 ; i--)
+                //Essayer de deplacer I de trois cases en restant sur la même ligne
+                for (int i = 0; i < 3; i++)
                 {
-                    finalY+= i;
-        
+                    if (maisiePos[1] < finalX)
+                        finalY++;
+                    else
+                    {
+                        finalY--;
+                    }
+
                     // Verifier si le déplacement est valide
-                    if (EstDeplacementValide([finalX, finalY] ))
+                    if (EstDeplacementValide([finalX, finalY]))
                     {
                         plateau[indominusPos[0], indominusPos[1]] = vide;
                         indominusPos = [finalX, finalY];
                         plateau[indominusPos[0], indominusPos[1]] = indominus;
+                    }
+                    else
+                    {
+                        if (i == 0)
+                        {
+                            //Impossible de repousser Indominus --> Fin de partie I a perdu
+                            partieTerminee = true;
+                            raisonDeLaFin = "===== VICTOIRE ===== \nIndominus Rex a été éliminé par Blue.";
+
+                            plateau[maisiePos[0], maisiePos[1]] = vide;
+                            maisiePos = [nouveauX, nouveauY];
+                            plateau[maisiePos[0], maisiePos[1]] = maisie;
+                            deplacementValide = true;
+                        }
+
                         break;
                     }
+
+                    plateau[maisiePos[0], maisiePos[1]] = vide;
+                    maisiePos = [nouveauX, nouveauY];
+                    plateau[maisiePos[0], maisiePos[1]] = maisie;
+                    deplacementValide = true;
                 }
             }
+            //Sinon ils sont sur la même colonne
             else
             {
-                for (int i = 3; i >0 ; i--)
+                //Essayer de deplacer I de trois cases en restant sur la même colonne
+                for (int i = 3; i > 0; i--)
                 {
-                    finalX+= i;
-        
+                    finalX += i;
+
                     // Verifier si le déplacement est valide
-                    if (EstDeplacementValide([finalX, finalY] ))
+                    if (EstDeplacementValide([finalX, finalY]))
                     {
                         plateau[indominusPos[0], indominusPos[1]] = vide;
                         indominusPos = [finalX, finalY];
@@ -524,3 +630,72 @@ bool VerifierIndominus()
 
     return encercleeHaut && encercleeGauche && encercleeBas && encercleeDroite;
 }
+
+// fonction principale du jeu
+void JouerLeJeu()
+{
+    // Affectation des positions de départ de O et B
+    owenPos = [0, 0];
+    bluePos = [0, 1];
+    
+    //Permet de savoir quand IR est énérvé
+    aToucheIndominus = false;
+    
+    partieTerminee = false;
+    raisonDeLaFin = "";
+    
+    RenseignerDimensionsPlateau();
+    InitialiserPlateau();
+
+
+    while (true)
+    {
+        PlacerPersonnages();
+        AfficherPlateau();
+
+
+        Console.WriteLine("Tour de Owen :");
+        DeplacerOwen();
+        AfficherPlateau();
+
+
+        JetGrenades();
+        AfficherPlateau();
+
+
+        Console.WriteLine("Tour de Blue :");
+        DeplacerBlue();
+        AfficherPlateau();
+
+
+        Console.WriteLine("Tour de l'Indominus :");
+        DeplacerIndominus();
+        AfficherPlateau();
+
+        Console.WriteLine("Pause. Appuyer pour continuer...");
+        Console.ReadLine();
+        Console.Clear();
+        
+        Console.WriteLine("Tour de maisie:");
+        DeplacerMaisie();
+        AfficherPlateau();
+
+        
+        if (partieTerminee)
+        {
+            Console.WriteLine($"{raisonDeLaFin}");
+            break;
+        }
+
+
+        Console.WriteLine("Fin du tour. Appuyez sur Entrée pour au tour suivant...");
+        Console.ReadLine();
+        Console.Clear();
+        Console.WriteLine("Le programme a repris !");
+    }
+}
+
+//------------------Fin Fonctions---------------------------------------
+
+//Appel de la fonction principale
+JouerLeJeu();
